@@ -35,7 +35,7 @@ sougou小分类数据集，共有5个类别，分别为体育、健康、军事�
 
 sougou数据集
 
-模型参数: batch_size = 8, maxlen = 200, epoch=5
+模型参数: batch_size = 8, maxlen = 256, epoch=10
 
 评估结果:
 
