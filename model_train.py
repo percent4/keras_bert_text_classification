@@ -13,7 +13,7 @@ from keras.models import Model
 from keras.optimizers import Adam
 
 # 建议长度<=510
-maxlen = 256
+maxlen = 300
 BATCH_SIZE = 8
 config_path = './chinese_L-12_H-768_A-12/bert_config.json'
 checkpoint_path = './chinese_L-12_H-768_A-12/bert_model.ckpt'
@@ -111,8 +111,8 @@ if __name__ == '__main__':
 
     # 数据处理, 读取训练集和测试集
     print("begin data processing...")
-    train_df = pd.read_csv("data/sougou_mini/train.csv").fillna(value="")
-    test_df = pd.read_csv("data/sougou_mini/test.csv").fillna(value="")
+    train_df = pd.read_csv("data/cnews/cnews_train.csv").fillna(value="")
+    test_df = pd.read_csv("data/cnews/cnews_test.csv").fillna(value="")
 
     labels = train_df["label"].unique()
     with open("label.json", "w", encoding="utf-8") as f:
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     model.fit_generator(
         train_D.__iter__(),
         steps_per_epoch=len(train_D),
-        epochs=10,
+        epochs=3,
         validation_data=test_D.__iter__(),
         validation_steps=len(test_D)
     )
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     print("finish model training!")
 
     # 模型保存
-    model.save('cls_sougou.h5')
+    model.save('cls_cnews.h5')
     print("Model saved!")
 
     result = model.evaluate_generator(test_D.__iter__(), steps=len(test_D))
