@@ -14,7 +14,7 @@ from keras.optimizers import Adam
 
 # 建议长度<=510
 maxlen = 300
-BATCH_SIZE = 8
+BATCH_SIZE = 32
 config_path = './chinese_L-12_H-768_A-12/bert_config.json'
 checkpoint_path = './chinese_L-12_H-768_A-12/bert_model.ckpt'
 dict_path = './chinese_L-12_H-768_A-12/vocab.txt'
@@ -68,8 +68,8 @@ class DataGenerator:
             X1, X2, Y = [], [], []
             for i in idxs:
                 d = self.data[i]
-                text = d[0][:maxlen]
-                x1, x2 = tokenizer.encode(first=text)
+                text = d[0]
+                x1, x2 = tokenizer.encode(first=text, max_len=maxlen)
                 y = d[1]
                 X1.append(x1)
                 X2.append(x2)
@@ -89,8 +89,8 @@ def create_cls_model(num_labels):
     for layer in bert_model.layers:
         layer.trainable = True
 
-    x1_in = Input(shape=(None,))
-    x2_in = Input(shape=(None,))
+    x1_in = Input(shape=(maxlen,))
+    x2_in = Input(shape=(maxlen,))
 
     x = bert_model([x1_in, x2_in])
     cls_layer = Lambda(lambda x: x[:, 0])(x)    # 取出[CLS]对应的向量用来做分类
@@ -111,8 +111,8 @@ if __name__ == '__main__':
 
     # 数据处理, 读取训练集和测试集
     print("begin data processing...")
-    train_df = pd.read_csv("data/cnews/cnews_train.csv").fillna(value="")
-    test_df = pd.read_csv("data/cnews/cnews_test.csv").fillna(value="")
+    train_df = pd.read_csv("data/sougou_mini/cnews_train.csv").fillna(value="")
+    test_df = pd.read_csv("data/sougou_mini/cnews_test.csv").fillna(value="")
 
     labels = train_df["label"].unique()
     with open("label.json", "w", encoding="utf-8") as f:
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     print("finish model training!")
 
     # 模型保存
-    model.save('cls_cnews.h5')
+    model.save('cls_sougou_mini.h5')
     print("Model saved!")
 
     result = model.evaluate_generator(test_D.__iter__(), steps=len(test_D))

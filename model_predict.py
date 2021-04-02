@@ -13,10 +13,10 @@ from model_train import token_dict, OurTokenizer
 from keras.models import load_model
 from keras_bert import get_custom_objects
 
-maxlen = 256
+maxlen = 300
 
 # 加载训练好的模型
-model = load_model("cls_sougou.h5", custom_objects=get_custom_objects())
+model = load_model("cls_sougou_mini.h5", custom_objects=get_custom_objects())
 tokenizer = OurTokenizer(token_dict)
 with open("label.json", "r", encoding="utf-8") as f:
     label_dict = json.loads(f.read())
@@ -31,10 +31,7 @@ text = "说到硬派越野SUV，你会想起哪些车型？是被称为“霸道
 
 # 利用BERT进行tokenize
 text = text[:maxlen]
-x1, x2 = tokenizer.encode(first=text)
-
-X1 = x1 + [0] * (maxlen-len(x1)) if len(x1) < maxlen else x1
-X2 = x2 + [0] * (maxlen-len(x2)) if len(x2) < maxlen else x2
+X1, X2 = tokenizer.encode(first=text, max_len=maxlen)
 
 # 模型预测并输出预测结果
 predicted = model.predict([[X1], [X2]])

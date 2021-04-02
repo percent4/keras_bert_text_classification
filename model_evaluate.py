@@ -16,7 +16,7 @@ from model_train import token_dict, OurTokenizer
 maxlen = 300
 
 # 加载训练好的模型
-model = load_model("cls_cnews.h5", custom_objects=get_custom_objects())
+model = load_model("cls_sougou_mini.h5", custom_objects=get_custom_objects())
 tokenizer = OurTokenizer(token_dict)
 with open("label.json", "r", encoding="utf-8") as f:
     label_dict = json.loads(f.read())
@@ -26,9 +26,7 @@ with open("label.json", "r", encoding="utf-8") as f:
 def predict_single_text(text):
     # 利用BERT进行tokenize
     text = text[:maxlen]
-    x1, x2 = tokenizer.encode(first=text)
-    X1 = x1 + [0] * (maxlen - len(x1)) if len(x1) < maxlen else x1
-    X2 = x2 + [0] * (maxlen - len(x2)) if len(x2) < maxlen else x2
+    X1, X2 = tokenizer.encode(first=text, max_len=maxlen)
 
     # 模型预测并输出预测结果
     predicted = model.predict([[X1], [X2]])

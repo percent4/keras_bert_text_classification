@@ -1,3 +1,5 @@
 .idea
 label.json
 __pycache__
+data/ccf2019
+chinese_L-12_H-768_A-12/bert_model*
