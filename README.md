@@ -89,6 +89,31 @@ weighted avg     0.9700    0.9697    0.9697       495
 weighted avg     0.9551    0.9528    0.9524     10000
 ```
 
+### 使用对抗训练FGM前后模型效果对比
+
+#### sougou数据集
+
+模型参数: batch_size = 8, maxlen = 256, epoch=10
+
+评估指标为weighted avg F1 score
+
+|-|train1|train2|train3|train avg|
+|---|---|---|---|---|
+|使用FGM前|0.9778|0.9697|0.9657|0.9711|
+|使用FGM后|0.9778|0.9838|0.9838|0.9818|
+
+#### THUCNews数据集
+
+模型参数: batch_size = 8, maxlen = 300, epoch=3
+
+评估指标为weighted avg F1 score
+
+|-|train1|train2|train3|train avg|
+|---|---|---|---|---|
+|使用FGM前|0.9524|0.9621|0.9685|0.961|
+|使用FGM后|0.9689|0.9723|0.9712|0.9708|
+
+
 ### 项目启动
 
 1. 将BERT中文预训练模型chinese_L-12_H-768_A-12放在chinese_L-12_H-768_A-12文件夹下

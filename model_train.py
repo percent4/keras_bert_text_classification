@@ -12,9 +12,11 @@ from keras.layers import *
 from keras.models import Model
 from keras.optimizers import Adam
 
+from FGM import adversarial_training
+
 # 建议长度<=510
 maxlen = 300
-BATCH_SIZE = 32
+BATCH_SIZE = 8
 config_path = './chinese_L-12_H-768_A-12/bert_config.json'
 checkpoint_path = './chinese_L-12_H-768_A-12/bert_model.ckpt'
 dict_path = './chinese_L-12_H-768_A-12/vocab.txt'
@@ -89,17 +91,17 @@ def create_cls_model(num_labels):
     for layer in bert_model.layers:
         layer.trainable = True
 
-    x1_in = Input(shape=(maxlen,))
-    x2_in = Input(shape=(maxlen,))
-
-    x = bert_model([x1_in, x2_in])
-    cls_layer = Lambda(lambda x: x[:, 0])(x)    # 取出[CLS]对应的向量用来做分类
+    # x1_in = Input(shape=(maxlen,))
+    # x2_in = Input(shape=(maxlen,))
+    #
+    # x = bert_model([x1_in, x2_in])
+    cls_layer = Lambda(lambda x: x[:, 0])(bert_model.output)    # 取出[CLS]对应的向量用来做分类
     p = Dense(num_labels, activation='softmax')(cls_layer)     # 多分类
 
-    model = Model([x1_in, x2_in], p)
+    model = Model(bert_model.input, p)
     model.compile(
         loss='categorical_crossentropy',
-        optimizer=Adam(1e-5), # 用足够小的学习率
+        optimizer=Adam(1e-5),   # 用足够小的学习率
         metrics=['accuracy']
     )
     # model.summary()
@@ -111,8 +113,8 @@ if __name__ == '__main__':
 
     # 数据处理, 读取训练集和测试集
     print("begin data processing...")
-    train_df = pd.read_csv("data/sougou_mini/cnews_train.csv").fillna(value="")
-    test_df = pd.read_csv("data/sougou_mini/cnews_test.csv").fillna(value="")
+    train_df = pd.read_csv("data/cnews/train.csv").fillna(value="")
+    test_df = pd.read_csv("data/cnews/test.csv").fillna(value="")
 
     labels = train_df["label"].unique()
     with open("label.json", "w", encoding="utf-8") as f:
@@ -140,6 +142,8 @@ if __name__ == '__main__':
 
     # 模型训练
     model = create_cls_model(len(labels))
+    # 启用对抗训练FGM
+    adversarial_training(model, 'Embedding-Token', 0.5)
     train_D = DataGenerator(train_data)
     test_D = DataGenerator(test_data)
 
@@ -155,7 +159,7 @@ if __name__ == '__main__':
     print("finish model training!")
 
     # 模型保存
-    model.save('cls_sougou_mini.h5')
+    model.save('cls_cnews.h5')
     print("Model saved!")
 
     result = model.evaluate_generator(test_D.__iter__(), steps=len(test_D))
